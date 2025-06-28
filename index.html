@@ -4,54 +4,70 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>عالطريق – رحلتك تبدأ هنا</title>
-
   <link rel="stylesheet" href="e2.css" />
   <style>
-    /* Modal common styles */
-    .modal {
-      display: none; 
-      position: fixed; 
-      z-index: 999; 
-      left: 0; top: 0;
-      width: 100%; height: 100%; 
-      overflow: auto; 
-      background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 10% auto;
-      padding: 20px;
-      border-radius: 5px;
-      width: 90%;
-      max-width: 400px;
-      direction: rtl;
-    }
-    .close {
-      color: #aaa;
-      float: left;
-      font-size: 28px;
-      font-weight: bold;
+    /* Your existing styles */
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);}
+    .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 5px; width: 90%; max-width: 400px; direction: rtl;}
+    .close { color: #aaa; float: left; font-size: 28px; font-weight: bold; cursor: pointer;}
+    .close:hover { color: black; }
+    .btn-group button { margin: 0 5px; }
+    .profile-icon {
+      position: absolute;
+      top: 15px;
+      left: 15px;
       cursor: pointer;
-    }
-    .close:hover {
-      color: black;
-    }
-    /* Simple styling for message */
-    #login-message {
-      margin-top: 10px;
+      font-size: 22px;
       font-weight: bold;
-      color: green;
-      word-break: break-word;
+      color: #333;
+      display: none;
+      z-index: 1001;
     }
-    /* Button styling fix for direction */
-    .btn-group button {
-      margin: 0 5px;
+    .profile-icon:hover { color: #007bff; }
+    #profile-dropdown {
+      display: none;
+      position: absolute;
+      top: 45px;
+      left: 15px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      min-width: 120px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 1002;
+      direction: rtl;
+      font-size: 14px;
     }
+    #profile-dropdown button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: right;
+      color: #333;
+      border-radius: 0;
+      outline: none;
+    }
+    #profile-dropdown button:hover {
+      background-color: #007bff;
+      color: white;
+    }
+    .lang-switch {
+      margin-left: 20px; /* shift right in RTL */
+      display: inline-block;
+      vertical-align: middle;
+    }
+    #login-message { margin-top: 10px; font-weight: bold; color: green; word-break: break-word;}
   </style>
 </head>
 <body>
 
   <header>
+    <div class="profile-icon" id="profile-link" onclick="toggleProfileDropdown()">👤</div>
+    <div id="profile-dropdown" role="menu" aria-label="User menu">
+      <button type="button" onclick="logout()">تسجيل الخروج</button>
+    </div>
     <div class="logo">
       <img src="https://i.ibb.co/y1BMpfC/Versatile-Circular-Logo-for-Ride-Hailing-App.png" alt="عالطريق" />
       <span>عالطريق</span>
@@ -61,8 +77,6 @@
       <a href="#how-it-works" data-key="navHow">كيف يعمل</a>
       <a href="#pricing" data-key="navPricing">الأسعار</a>
       <a href="#contact" data-key="navContact">اتصل بنا</a>
-      <a href="#" id="profile-link" style="display:none;"></a>
-      <a href="#" id="logout-btn" style="display:none;" onclick="logout()">خروج</a>
     </nav>
     <div class="lang-switch">
       <button onclick="switchLang('ar')">عربي</button>
@@ -77,7 +91,7 @@
       <p data-key="subtext">طلب تاكسي خاص بسهولة وسرعة مع عالطريق. استمتع برحلات مريحة وآمنة مع سائقين محترفين.</p>
       <div class="btn-group">
         <button class="btn btn-primary" data-key="btnRequest" onclick="openBookingModal()">اطلب الآن</button>
-        <button class="btn btn-secondary" data-key="btnLogin" onclick="openLoginModal()">تسجيل / دخول</button>
+        <button id="login-btn" class="btn btn-secondary" data-key="btnLogin" onclick="openLoginModal()">تسجيل / دخول</button>
       </div>
     </section>
 
@@ -329,80 +343,28 @@
         document.documentElement.dir = 'rtl';
       }
 
+   
       document.querySelectorAll('[data-key]').forEach(el => {
         const key = el.getAttribute('data-key');
         if (translations[lang] && translations[lang][key]) {
           el.textContent = translations[lang][key];
         }
       });
-
-      // Update placeholders in booking modal
-      const bookingModal = document.getElementById('booking-modal');
-      if (bookingModal) {
-        const inputs = bookingModal.querySelectorAll('input[type="text"]');
-        if (inputs[0]) inputs[0].placeholder = translations[lang]['formPickup'] || '';
-        if (inputs[1]) inputs[1].placeholder = translations[lang]['formDestination'] || '';
-
-        const select = bookingModal.querySelector('select');
-        if (select) {
-          const firstOption = select.querySelector('option[disabled]');
-          if (firstOption) firstOption.textContent = translations[lang]['formSelectOption'] || '';
-          select.querySelector('option[value="standard"]').textContent = translations[lang]['formStandard'] || '';
-          select.querySelector('option[value="premium"]').textContent = translations[lang]['formPremium'] || '';
-          select.querySelector('option[value="group"]').textContent = translations[lang]['formGroup'] || '';
-        }
-      }
-
-      // Update placeholders in login modal
-      const loginPhone = document.getElementById('login-phone');
-      if (loginPhone) loginPhone.placeholder = translations[lang]['loginPhoneLabel'] || '';
-
-      const loginCode = document.getElementById('login-code');
-      if (loginCode) loginCode.placeholder = translations[lang]['loginCodeLabel'] || '';
-
-      // Clear login messages and reset login modal UI on language change
-            // Clear login messages and reset login modal UI on language change
-      closeLoginModal();
-      closeBookingModal();
-
-      // Update profile and logout link text if visible
-      updateProfileLogoutText();
     }
 
-    // Modal open/close functions
+    // Open booking modal
     function openBookingModal() {
-      if (!isLoggedIn()) {
-        alert(translations[document.documentElement.lang]['btnLogin']);
-        openLoginModal();
-        return;
-      }
-      const modal = document.getElementById('booking-modal');
-      modal.style.display = 'block';
-
-      const pickupInput = modal.querySelector('input[type="text"]');
-      pickupInput.value = '';
-      pickupInput.placeholder = translations[document.documentElement.lang]['formPickup'] || '';
-
-      if ("geolocation" in navigator) {
-        pickupInput.placeholder = '...جاري تحديد الموقع'; // You can translate as needed
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            pickupInput.value = `خط العرض: ${latitude.toFixed(6)}, خط الطول: ${longitude.toFixed(6)}`;
-            pickupInput.placeholder = '';
-          },
-          () => {
-            pickupInput.placeholder = translations[document.documentElement.lang]['formPickup'] || '';
-          }
-        );
-      }
+      document.getElementById('booking-modal').style.display = 'block';
     }
+    // Close booking modal
     function closeBookingModal() {
       document.getElementById('booking-modal').style.display = 'none';
     }
 
+    // Open login modal
     function openLoginModal() {
       document.getElementById('login-modal').style.display = 'block';
+      // Reset login modal steps and messages
       document.getElementById('login-step1').style.display = 'block';
       document.getElementById('login-step2').style.display = 'none';
       document.getElementById('login-message').textContent = '';
@@ -410,134 +372,137 @@
       document.getElementById('login-phone').value = '';
       document.getElementById('login-code').value = '';
     }
+    // Close login modal
     function closeLoginModal() {
       document.getElementById('login-modal').style.display = 'none';
     }
 
-    // Simple simulated DB for demo purposes
-    const simulatedDB = {};
-
-    // Request login code (simulate sending WhatsApp code)
-    function requestLoginCode() {
-      const phoneInput = document.getElementById('login-phone');
-      const phone = phoneInput.value.trim();
-      const lang = document.documentElement.lang || 'ar';
-      const messageEl = document.getElementById('login-message');
-
-      if (!phone) {
-        alert(translations[lang]['loginPhoneRequired']);
-        return;
-      }
-
-      // Generate 5-digit code
-      const code = Math.floor(10000 + Math.random() * 90000).toString();
-
-      // Store code and expiry (5 mins)
-      simulatedDB[phone] = { code, expiry: Date.now() + 5 * 60 * 1000 };
-
-      // Show code sent message and WhatsApp link
-      messageEl.style.color = 'green';
-      messageEl.textContent = translations[lang]['loginCodeSent'];
-
-      const whatsappLinkContainer = document.getElementById('whatsapp-link-container');
-      whatsappLinkContainer.innerHTML = `
-        <a href="https://wa.me/${phone}?text=رمز التحقق الخاص بك هو: ${code}" target="_blank" rel="noopener noreferrer" style="color: #25D366;">
-          فتح واتساب لإرسال الرمز
-        </a>
-      `;
-
-      // Show step 2
-      document.getElementById('login-step1').style.display = 'none';
-      document.getElementById('login-step2').style.display = 'block';
-    }
-
-    // Verify code and log user in
-    function verifyLoginCode() {
-      const phone = document.getElementById('login-phone').value.trim();
-      const code = document.getElementById('login-code').value.trim();
-      const lang = document.documentElement.lang || 'ar';
-      const messageEl = document.getElementById('login-message');
-
-      if (!code) {
-        alert(translations[lang]['loginCodeRequired']);
-        return;
-      }
-
-      const record = simulatedDB[phone];
-      if (!record) {
-        messageEl.style.color = 'red';
-        messageEl.textContent = translations[lang]['loginError'];
-        return;
-      }
-      if (Date.now() > record.expiry) {
-        messageEl.style.color = 'red';
-        messageEl.textContent = translations[lang]['loginInvalidCode'];
-        return;
-      }
-      if (record.code !== code) {
-        messageEl.style.color = 'red';
-        messageEl.textContent = translations[lang]['loginInvalidCode'];
-        return;
-      }
-
-      localStorage.setItem('loggedInUser', phone);
-      messageEl.style.color = 'green';
-      messageEl.textContent = translations[lang]['loginSuccess'];
-
-      updateProfileLogoutText();
-
-      setTimeout(() => {
-        closeLoginModal();
-        messageEl.style.color = 'black';
-      }, 1500);
-    }
-
-    // Check login status
-    function isLoggedIn() {
-      return !!localStorage.getItem('loggedInUser');
-    }
-
-    // Update profile and logout UI
-    function updateProfileLogoutText() {
-      const lang = document.documentElement.lang || 'ar';
-      const profileLink = document.getElementById('profile-link');
-      const logoutBtn = document.getElementById('logout-btn');
-      if (isLoggedIn()) {
-        profileLink.style.display = 'inline-block';
-        logoutBtn.style.display = 'inline-block';
-        if (lang === 'en') profileLink.textContent = 'Profile';
-        else if (lang === 'he') profileLink.textContent = 'פרופיל';
-        else profileLink.textContent = 'ملفي';
-      } else {
-        profileLink.style.display = 'none';
-        logoutBtn.style.display = 'none';
-      }
+    // Toggle profile dropdown
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profile-dropdown');
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
     }
 
     // Logout function
     function logout() {
-      localStorage.removeItem('loggedInUser');
-      updateProfileLogoutText();
-      alert(document.documentElement.lang === 'en' ? 'Logged out' :
-            document.documentElement.lang === 'he' ? 'התנתקת' :
-            'تم تسجيل الخروج');
+      localStorage.removeItem('loggedInPhone');
+      updateUIForLogin(false);
+      toggleProfileDropdown();
+      alert('تم تسجيل الخروج');
     }
 
-    // Initialize page on load
+    // Update UI based on login state
+    function updateUIForLogin(isLoggedIn) {
+      const profileIcon = document.getElementById('profile-link');
+      const loginBtn = document.getElementById('login-btn');
+      if (isLoggedIn) {
+        profileIcon.style.display = 'block';
+        loginBtn.style.display = 'none';
+      } else {
+        profileIcon.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+      }
+    }
+
+    // Request login code
+    async function requestLoginCode() {
+      const phoneInput = document.getElementById('login-phone');
+      const phone = phoneInput.value.trim();
+      const msg = document.getElementById('login-message');
+      const waContainer = document.getElementById('whatsapp-link-container');
+      msg.style.color = 'red';
+
+      if (!phone) {
+        msg.textContent = translations[getCurrentLang()].loginPhoneRequired;
+        return;
+      }
+
+      try {
+        const res = await fetch('/send-code', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ phone })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = 'green';
+          msg.textContent = translations[getCurrentLang()].loginCodeSent;
+          waContainer.innerHTML = `<a href="${data.waLink}" target="_blank" rel="noopener noreferrer">فتح واتساب لإرسال الكود</a>`;
+          document.getElementById('login-step1').style.display = 'none';
+          document.getElementById('login-step2').style.display = 'block';
+        } else {
+          msg.textContent = data.message || translations[getCurrentLang()].loginError;
+          waContainer.innerHTML = '';
+        }
+      } catch (e) {
+        msg.textContent = translations[getCurrentLang()].loginError;
+        waContainer.innerHTML = '';
+      }
+    }
+
+    // Verify login code
+    async function verifyLoginCode() {
+      const phone = document.getElementById('login-phone').value.trim();
+      const code = document.getElementById('login-code').value.trim();
+      const msg = document.getElementById('login-message');
+      const waContainer = document.getElementById('whatsapp-link-container');
+      msg.style.color = 'red';
+
+      if (!code) {
+        msg.textContent = translations[getCurrentLang()].loginCodeRequired;
+        return;
+      }
+
+      try {
+        const res = await fetch('/verify-code', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ phone, code })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = 'green';
+          msg.textContent = translations[getCurrentLang()].loginSuccess;
+          waContainer.innerHTML = '';
+          localStorage.setItem('loggedInPhone', phone);
+          updateUIForLogin(true);
+          setTimeout(() => {
+            closeLoginModal();
+            msg.textContent = '';
+          }, 1500);
+        } else {
+          msg.textContent = data.message || translations[getCurrentLang()].loginInvalidCode;
+        }
+      } catch (e) {
+        msg.textContent = translations[getCurrentLang()].loginError;
+      }
+    }
+
+    // Utility to get current language, default 'ar'
+    function getCurrentLang() {
+      return document.documentElement.lang || 'ar';
+    }
+
+    // On page load - update UI based on login state
     window.onload = () => {
-      switchLang('ar'); // default Arabic
-      updateProfileLogoutText();
+      switchLang(getCurrentLang());
+      const loggedInPhone = localStorage.getItem('loggedInPhone');
+      updateUIForLogin(!!loggedInPhone);
     };
 
-    // Close modals on clicking outside modal content
+    // Close modals if clicked outside content
     window.onclick = function(event) {
       const bookingModal = document.getElementById('booking-modal');
       const loginModal = document.getElementById('login-modal');
-      if (event.target === bookingModal) closeBookingModal();
-      if (event.target === loginModal) closeLoginModal();
+      if (event.target === bookingModal) {
+        closeBookingModal();
+      }
+      if (event.target === loginModal) {
+        closeLoginModal();
+      }
     };
+
   </script>
-  <script src="e3.js"></script>
+
 </body>
 </html>
-
